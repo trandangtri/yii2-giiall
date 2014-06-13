@@ -1,0 +1,23 @@
+{
+    "name": "trandangtri/yii2-giiall",
+    "description": "Using Yii2-Gii to generate code for other PHP framework, such as PhalconEye, Laravel, etc.",
+    "keywords": ["yii2", "gii", "phalconeye", "laravel", "generator"],
+    "homepage": "https://github.com/trandangtri/yii2-giiall",
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Tran Dang Tri",
+            "email": "trandangtri@gmail.com",
+            "homepage": "http://ideason.vn"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "trandangtri\\giiall\\": ""
+        }
+    },
+    "require": {
+        "yiisoft/yii2": "*"
+    }
+}
