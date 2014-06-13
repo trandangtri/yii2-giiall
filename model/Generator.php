@@ -54,10 +54,10 @@ class Generator extends \yii\gii\Generator {
 			$params      = [
 				'tableName'   => $tableName,
 				# 'className'   => $className,
-				'tableSchema' => $tableSchema,
+				# 'tableSchema' => $tableSchema,
 				# 'labels'      => $this->generateLabels($tableSchema),
 				# 'rules'       => $this->generateRules($tableSchema),
-				'relations'   => isset($relations[$className]) ? $relations[$className] : [],
+				# 'relations'   => isset($relations[$className]) ? $relations[$className] : [],
 			];
 			# $files[]     = new CodeFile(Yii::getAlias('@' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model.php', $params));
 		}
