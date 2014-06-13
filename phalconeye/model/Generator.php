@@ -30,7 +30,7 @@ class Generator extends \yii\gii\Generator {
 	 * @inheritdoc
 	 */
 	public function getName() {
-		return 'PhalconEye | Model Generator: ' . $this->appPath;
+		return 'PhalconEye | Model Generator';
 	}
 
 	/**
