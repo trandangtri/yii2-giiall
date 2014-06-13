@@ -1,6 +1,6 @@
 <?php
 
-namespace trandangtri\giiphalconeye\model;
+namespace trandangtri\giiall\phalconeye\model;
 
 use Yii;
 use yii\db\ActiveRecord;
@@ -19,19 +19,18 @@ use yii\base\NotSupportedException;
 class Generator extends \yii\gii\Generator {
 
 	public $db = 'db';
-	public $ns = 'app\models';
+	public $ns = 'Core\Model';
 	public $tableName;
 	public $modelClass;
-	public $baseClass = 'yii\db\ActiveRecord';
+	public $baseClass = 'AbstractModel';
 	public $generateRelations = TRUE;
-	public $generateLabelsFromComments = FALSE;
-	public $useTablePrefix = FALSE;
+	public $appPath = '';
 
 	/**
 	 * @inheritdoc
 	 */
 	public function getName() {
-		return 'PhalconEye | Model Generator';
+		return 'PhalconEye | Model Generator: ' . $this->appPath;
 	}
 
 	/**
@@ -48,18 +47,19 @@ class Generator extends \yii\gii\Generator {
 		$files     = [];
 		$relations = $this->generateRelations();
 		$db        = $this->getDbConnection();
+
 		foreach ($this->getTableNames() as $tableName) {
+
 			$className   = $this->generateClassName($tableName);
 			$tableSchema = $db->getTableSchema($tableName);
 			$params      = [
 				'tableName'   => $tableName,
-				# 'className'   => $className,
+				'className'   => $className,
 				'tableSchema' => $tableSchema,
-				# 'labels'      => $this->generateLabels($tableSchema),
-				# 'rules'       => $this->generateRules($tableSchema),
 				'relations'   => isset($relations[$className]) ? $relations[$className] : [],
 			];
-			# $files[]     = new CodeFile(Yii::getAlias('@' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model.php', $params));
+
+			$files[] = new CodeFile(Yii::getAlias('@app/' . $this->appPath . 'modules/' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model.php', $params));
 		}
 
 		return $files;
@@ -70,7 +70,7 @@ class Generator extends \yii\gii\Generator {
 	 */
 	public function rules() {
 		return array_merge(parent::rules(), [
-			[['db', 'ns', 'tableName', 'modelClass', 'baseClass'], 'filter', 'filter' => 'trim'],
+			[['ns', 'tableName', 'modelClass', 'baseClass'], 'filter', 'filter' => 'trim'],
 			[
 				['ns'],
 				'filter',
@@ -78,8 +78,8 @@ class Generator extends \yii\gii\Generator {
 						return trim($value, '\\');
 					}
 			],
-			[['db', 'ns', 'tableName', 'baseClass'], 'required'],
-			[['db', 'modelClass'], 'match', 'pattern' => '/^\w+$/', 'message' => 'Only word characters are allowed.'],
+			[['ns', 'tableName', 'baseClass'], 'required'],
+			[['modelClass'], 'match', 'pattern' => '/^\w+$/', 'message' => 'Only word characters are allowed.'],
 			[
 				['ns', 'baseClass'],
 				'match',
@@ -92,15 +92,11 @@ class Generator extends \yii\gii\Generator {
 				'pattern' => '/^(\w+\.)?([\w\*]+)$/',
 				'message' => 'Only word characters, and optionally an asterisk and/or a dot are allowed.'
 			],
-			[['db'], 'validateDb'],
-			[['ns'], 'validateNamespace'],
+			// [['ns'], 'validateNamespace'],
 			[['tableName'], 'validateTableName'],
 			[['modelClass'], 'validateModelClass', 'skipOnEmpty' => FALSE],
-			[['baseClass'], 'validateClass', 'params' => ['extends' => ActiveRecord::className()]],
-			[['generateRelations', 'generateLabelsFromComments'], 'boolean'],
-			[['enableI18N'], 'boolean'],
-			[['useTablePrefix'], 'boolean'],
-			[['messageCategory'], 'validateMessageCategory', 'skipOnEmpty' => FALSE],
+			// [['baseClass'], 'validateClass', 'params' => ['extends' => ActiveRecord::className()]],
+			[['generateRelations'], 'boolean']
 		]);
 	}
 
@@ -109,13 +105,11 @@ class Generator extends \yii\gii\Generator {
 	 */
 	public function attributeLabels() {
 		return array_merge(parent::attributeLabels(), [
-			'ns'                         => 'Namespace',
-			'db'                         => 'Database Connection ID',
-			'tableName'                  => 'Table Name',
-			'modelClass'                 => 'Model Class',
-			'baseClass'                  => 'Base Class',
-			'generateRelations'          => 'Generate Relations',
-			'generateLabelsFromComments' => 'Generate Labels from DB Comments',
+			'ns'                => 'Namespace ()',
+			'tableName'         => 'Table Name',
+			'modelClass'        => 'Model Class',
+			'baseClass'         => 'Base Class',
+			'generateRelations' => 'Generate Relations'
 		]);
 	}
 
@@ -124,28 +118,21 @@ class Generator extends \yii\gii\Generator {
 	 */
 	public function hints() {
 		return array_merge(parent::hints(), [
-			'ns'                         => 'This is the namespace of the ActiveRecord class to be generated, e.g., <code>app\models</code>',
-			'db'                         => 'This is the ID of the DB application component.',
-			'tableName'                  => 'This is the name of the DB table that the new ActiveRecord class is associated with, e.g. <code>post</code>.
+			'ns'                => 'This is the namespace of the Model class to be generated, e.g., <code>Core\Model</code>',
+			'tableName'         => 'This is the name of the DB table that the new Model class is associated with, e.g. <code>User</code>.
                 The table name may consist of the DB schema part if needed, e.g. <code>public.post</code>.
                 The table name may end with asterisk to match multiple table names, e.g. <code>tbl_*</code>
                 will match tables who name starts with <code>tbl_</code>. In this case, multiple ActiveRecord classes
                 will be generated, one for each matching table name; and the class names will be generated from
                 the matching characters. For example, table <code>tbl_post</code> will generate <code>Post</code>
                 class.',
-			'modelClass'                 => 'This is the name of the ActiveRecord class to be generated. The class name should not contain
+			'modelClass'        => 'This is the name of the ActiveRecord class to be generated. The class name should not contain
                 the namespace part as it is specified in "Namespace". You do not need to specify the class name
                 if "Table Name" ends with asterisk, in which case multiple ActiveRecord classes will be generated.',
-			'baseClass'                  => 'This is the base class of the new ActiveRecord class. It should be a fully qualified namespaced class name.',
-			'generateRelations'          => 'This indicates whether the generator should generate relations based on
+			'baseClass'         => 'This is the base class of the new ActiveRecord class. It should be a fully qualified namespaced class name.',
+			'generateRelations' => 'This indicates whether the generator should generate relations based on
                 foreign key constraints it detects in the database. Note that if your database contains too many tables,
-                you may want to uncheck this option to accelerate the code generation process.',
-			'generateLabelsFromComments' => 'This indicates whether the generator should generate attribute labels
-                by using the comments of the corresponding DB columns.',
-			'useTablePrefix'             => 'This indicates whether the table name returned by the generated ActiveRecord class
-                should consider the <code>tablePrefix</code> setting of the DB connection. For example, if the
-                table name is <code>tbl_post</code> and <code>tablePrefix=tbl_</code>, the ActiveRecord class
-                will return the table name as <code>{{%post}}</code>.',
+                you may want to uncheck this option to accelerate the code generation process.'
 		]);
 	}
 
@@ -178,40 +165,11 @@ class Generator extends \yii\gii\Generator {
 	public function stickyAttributes() {
 		return array_merge(parent::stickyAttributes(), [
 			'ns',
-			'db',
 			'baseClass',
-			'generateRelations',
-			'generateLabelsFromComments'
+			'generateRelations'
 		]);
 	}
 
-
-
-	/**
-	 * Generates the attribute labels for the specified table.
-	 *
-	 * @param \yii\db\TableSchema $table the table schema
-	 *
-	 * @return array the generated attribute labels (name => label)
-	 */
-	public function generateLabels($table) {
-		$labels = [];
-		foreach ($table->columns as $column) {
-			if ($this->generateLabelsFromComments && !empty($column->comment)) {
-				$labels[$column->name] = $column->comment;
-			} elseif (!strcasecmp($column->name, 'id')) {
-				$labels[$column->name] = 'ID';
-			} else {
-				$label = Inflector::camel2words($column->name);
-				if (strcasecmp(substr($label, -3), ' id') === 0) {
-					$label = substr($label, 0, -3) . ' ID';
-				}
-				$labels[$column->name] = $label;
-			}
-		}
-
-		return $labels;
-	}
 
 	/**
 	 * Generates validation rules for the specified table.
@@ -312,22 +270,28 @@ class Generator extends \yii\gii\Generator {
 		foreach ($db->getSchema()->getTableSchemas($schemaName) as $table) {
 			$tableName = $table->name;
 			$className = $this->generateClassName($tableName);
+
 			foreach ($table->foreignKeys as $refs) {
 				$refTable = $refs[0];
 				unset($refs[0]);
+
 				$fks          = array_keys($refs);
 				$refClassName = $this->generateClassName($refTable);
 
+				// ----------------------------------------------
 				// Add relation for this table
-				$link                                 = $this->generateRelationLink(array_flip($refs));
-				$relationName                         = $this->generateRelationName($relations, $className, $table, $fks[0], FALSE);
+				$links        = $this->generateRelationLink($refs, $refClassName, "BelongsTo", $this->ns);
+				$relationName = $this->generateRelationName($relations, $className, $table, $fks[0], FALSE);
+
 				$relations[$className][$relationName] = [
-					"return \$this->hasOne($refClassName::className(), $link);",
-					$refClassName,
-					FALSE,
+					'refs'    => $links,
+					'refName' => $refClassName,
+					'hasMany' => FALSE,
 				];
 
+				// ----------------------------------------------
 				// Add relation for the referenced table
+				/*
 				$hasMany = FALSE;
 				if (count($table->primaryKey) > count($fks)) {
 					$hasMany = TRUE;
@@ -339,18 +303,22 @@ class Generator extends \yii\gii\Generator {
 						}
 					}
 				}
-				$link                                    = $this->generateRelationLink($refs);
+
+
+				$link                                    = $this->generateRelationLink($refs, $refClassName);
 				$relationName                            = $this->generateRelationName($relations, $refClassName, $refTable, $className, $hasMany);
 				$relations[$refClassName][$relationName] = [
 					"return \$this->" . ($hasMany ? 'hasMany' : 'hasOne') . "($className::className(), $link);",
 					$className,
 					$hasMany,
-				];
+				];*/
 			}
 
 			if (($fks = $this->checkPivotTable($table)) === FALSE) {
 				continue;
 			}
+
+			/*
 			$table0     = $fks[$table->primaryKey[0]][0];
 			$table1     = $fks[$table->primaryKey[1]][0];
 			$className0 = $this->generateClassName($table0);
@@ -372,10 +340,29 @@ class Generator extends \yii\gii\Generator {
 				"return \$this->hasMany($className0::className(), $link)->viaTable('{$table->name}', $viaLink);",
 				$className0,
 				TRUE,
-			];
+			];*/
 		}
 
 		return $relations;
+	}
+
+	/**
+	 * Generates the link parameter to be used in generating the relation declaration.
+	 *
+	 * @param array  $refs         reference constraint
+	 * @param string $refClassName reference Class name
+	 * @param string $refType      reference type
+	 * @param string $ns           namespace
+	 *
+	 * @return string the generated link parameter.
+	 */
+	protected function generateRelationLink($refs, $refClassName, $refType, $ns) {
+		$pairs = [];
+		foreach ($refs as $a => $b) {
+			$pairs[] = "@$refType('$a', '\\$ns\\$refClassName', '$b', {'alias': '$refClassName'})";
+		}
+
+		return $pairs;
 	}
 
 	/**
@@ -385,7 +372,7 @@ class Generator extends \yii\gii\Generator {
 	 *
 	 * @return string the generated link parameter.
 	 */
-	protected function generateRelationLink($refs) {
+	protected function __generateRelationLink($refs) {
 		$pairs = [];
 		foreach ($refs as $a => $b) {
 			$pairs[] = "'$a' => '$b'";
@@ -456,16 +443,6 @@ class Generator extends \yii\gii\Generator {
 		return $name;
 	}
 
-	/**
-	 * Validates the [[db]] attribute.
-	 */
-	public function validateDb() {
-		if (!Yii::$app->has($this->db)) {
-			$this->addError('db', 'There is no application component named "db".');
-		} elseif (!Yii::$app->get($this->db) instanceof Connection) {
-			$this->addError('db', 'The "db" application component must be a DB connection instance.');
-		}
-	}
 
 	/**
 	 * Validates the [[ns]] attribute.
