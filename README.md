@@ -1,4 +1,4 @@
-`yii2-giiall`
+Yii2 - Gii All
 ===========
 
 Goals
@@ -54,9 +54,6 @@ And don't forget to setup a database application component, eg.
          'password' => 'root',
          'charset' => 'utf8',
     ],
-
-> Note: You can use the MySQL sakila demo database for testing.
-
 
 Open Gii...
 
