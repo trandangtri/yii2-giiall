@@ -5,6 +5,8 @@ echo "<?php\n";
 
 namespace <?= $generator->ns ?>;
 
+use Engine\Db\AbstractModel;
+
 /**
  * This is the model class for table "<?= $tableName ?>".
  *
@@ -24,6 +26,19 @@ namespace <?= $generator->ns ?>;
 <?php endforeach; ?>
 <?php endif; ?>
  */
-class <?= $className ?> extends Base\<?= $className ?>Base {
+class <?= $className ?> extends <?= ltrim($generator->baseClass, '\\') ?> {
+<?php foreach ($tableSchema->columns as $column): ?>
+
+	/**
+<?php if ($column->isPrimaryKey) : ?>
+	 * @Primary
+<?php endif; ?>
+<?php if ($column->autoIncrement) : ?>
+	 * @Identity
+<?php endif; ?>
+	 * @Column(<?= "type=\"{$column->phpType}\", nullable=" . ($column->allowNull?'true':'false') .", column=\"$column->name\"" . ($column->size!==null ? ", size=\"$column->size\"" : "") . ")\n" ?>
+	 */
+	public $<?= $column->name ?>;
+<?php endforeach; ?>
 
 }

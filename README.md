@@ -43,7 +43,7 @@ Edit the application config...
     ];
 
 
-Remember setup the 'appPath' to point to the application folder of your Core application. In this case, it pointed to PhalconEye application folder
+Remember setup the `appPath` to point to the application folder of your Core application. In this case, it pointed to PhalconEye application folder
 
 And don't forget to setup a database application component, eg.
 

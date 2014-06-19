@@ -13,8 +13,8 @@ use yii\base\NotSupportedException;
 /**
  * This generator will generate one or multiple ActiveRecord classes for the specified database table.
  *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @since  2.0
+ * @author Tri Tran <tri.tran@glandoresystems.com>
+ * @since  1.0
  */
 class Generator extends \yii\gii\Generator {
 
@@ -25,6 +25,7 @@ class Generator extends \yii\gii\Generator {
 	public $baseClass = 'AbstractModel';
 	public $generateRelations = TRUE;
 	public $appPath = '';
+	public $useModelBase = false;
 
 	/**
 	 * @inheritdoc
@@ -59,7 +60,13 @@ class Generator extends \yii\gii\Generator {
 				'relations'   => isset($relations[$className]) ? $relations[$className] : [],
 			];
 
-			$files[] = new CodeFile(Yii::getAlias('@app/' . $this->appPath . 'modules/' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model.php', $params));
+			if ($this->useModelBase) {
+				$files[] = new CodeFile(Yii::getAlias('@app/' . $this->appPath . 'modules/' . str_replace('\\', '/', $this->ns)) . '/base/' . $className . 'Base.php', $this->render('model_base.php', $params));
+				$files[] = new CodeFile(Yii::getAlias('@app/' . $this->appPath . 'modules/' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model.php', $params));
+			} else {
+				$files[] = new CodeFile(Yii::getAlias('@app/' . $this->appPath . 'modules/' . str_replace('\\', '/', $this->ns)) . '/' . $className . '.php', $this->render('model_non_base.php', $params));
+			}
+
 		}
 
 		return $files;
@@ -95,6 +102,7 @@ class Generator extends \yii\gii\Generator {
 			// [['ns'], 'validateNamespace'],
 			[['tableName'], 'validateTableName'],
 			[['modelClass'], 'validateModelClass', 'skipOnEmpty' => FALSE],
+			[['useModelBase'], 'boolean'],
 			// [['baseClass'], 'validateClass', 'params' => ['extends' => ActiveRecord::className()]],
 			[['generateRelations'], 'boolean']
 		]);

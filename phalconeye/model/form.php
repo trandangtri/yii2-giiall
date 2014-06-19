@@ -11,3 +11,4 @@ echo $form->field($generator, 'tableName');
 echo $form->field($generator, 'modelClass');
 echo $form->field($generator, 'baseClass');
 echo $form->field($generator, 'generateRelations')->checkbox();
+echo $form->field($generator, 'useModelBase')->checkbox();
